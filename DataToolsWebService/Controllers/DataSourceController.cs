@@ -82,7 +82,7 @@ public sealed class DataSourceController : ControllerBase
 
     public sealed class PredictionRequest
     {
-        public IFormFile Csv { get; init; }
+        public required IFormFile Csv { get; init; }
     }
 
     public sealed record class PredictionResponse
