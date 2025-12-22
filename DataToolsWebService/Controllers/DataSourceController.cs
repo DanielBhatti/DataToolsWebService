@@ -39,7 +39,8 @@ public sealed class DataSourceController : ControllerBase
     [Consumes("multipart/form-data")]
     [ProducesResponseType(typeof(List<ComparisonResult>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<List<ComparisonResult>>> Compare([FromForm] CompareCsvRequest request, CancellationToken ct)
+    public async Task<ActionResult<List<ComparisonResult>>> Compare([FromForm] CompareCsvRequest request, [FromQuery] HashSet<ComparisonResultType>? include,
+    [FromQuery] HashSet<ComparisonResultType>? exclude, CancellationToken ct)
     {
         if(request.LeftCsv is null || request.LeftCsv.Length == 0) return BadRequest($"{nameof(request.LeftCsv)} is required.");
         if(request.RightCsv is null || request.RightCsv.Length == 0) return BadRequest($"{nameof(request.RightCsv)} is required.");
@@ -52,6 +53,9 @@ public sealed class DataSourceController : ControllerBase
             var left = await CsvDataSource.FromUploadAsync(request.LeftCsv, ct);
             var right = await CsvDataSource.FromUploadAsync(request.RightCsv, ct);
             var results = Comparator.Compare(left, right, primaryKeys);
+
+            if(include is { Count: > 0 }) results = results.Where(r => include.Contains(r.ComparisonResultType)).ToList();
+            if(exclude is { Count: > 0 }) results = results.Where(r => !exclude.Contains(r.ComparisonResultType)).ToList();
             return Ok(results);
         }
         catch(Exception ex)
