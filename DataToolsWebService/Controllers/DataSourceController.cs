@@ -18,7 +18,7 @@ public sealed class DataSourceController : ControllerBase
 
     public DataSourceController(Comparator comparator, DataTypePredictor predictor) => (Comparator, Predictor) = (comparator, predictor);
 
-    [HttpPost("predict")]
+    [HttpPost("predict/csv")]
     public async Task<ActionResult<List<PredictionResponse>>> Predict([FromForm] PredictionRequest request, CancellationToken ct)
     {
         if(request.Csv is null) return BadRequest($"{nameof(request.Csv)} is required.");
@@ -35,7 +35,7 @@ public sealed class DataSourceController : ControllerBase
         return Ok(predictions);
     }
 
-    [HttpPost("compare")]
+    [HttpPost("compare/csv")]
     [Consumes("multipart/form-data")]
     [ProducesResponseType(typeof(List<ComparisonResult>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
