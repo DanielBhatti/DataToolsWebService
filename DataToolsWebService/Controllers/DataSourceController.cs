@@ -1,8 +1,9 @@
 using CsvHelper;
 using CsvHelper.Configuration;
+using DataToolsWebService.Controllers.Requests;
+using DataToolsWebService.Controllers.Responses;
 using Eli.Data.DataSourceComparison;
 using Eli.Data.DataSourceComparison.DataSources;
-using Eli.Data.DataTypes;
 using Eli.Data.Predictor;
 using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
@@ -17,6 +18,9 @@ public sealed class DataSourceController : ControllerBase
     private DataTypePredictor Predictor { get; }
 
     public DataSourceController(Comparator comparator, DataTypePredictor predictor) => (Comparator, Predictor) = (comparator, predictor);
+
+    [HttpGet("comparison-result-types")]
+    public ActionResult<IReadOnlyList<string>> GetComparisonResultTypes() => Ok(Enum.GetNames<ComparisonResultType>());
 
     [HttpPost("predict/csv")]
     public async Task<ActionResult<List<PredictionResponse>>> Predict([FromForm] PredictionRequest request, CancellationToken ct)
@@ -74,25 +78,6 @@ public sealed class DataSourceController : ControllerBase
             .Where(p => !string.IsNullOrWhiteSpace(p))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
-    }
-
-    public sealed class CompareCsvRequest
-    {
-        public IFormFile? LeftCsv { get; init; }
-        public IFormFile? RightCsv { get; init; }
-
-        public List<string>? PrimaryKeys { get; init; }
-    }
-
-    public sealed class PredictionRequest
-    {
-        public required IFormFile Csv { get; init; }
-    }
-
-    public sealed record class PredictionResponse
-    {
-        public required string Field { get; init; }
-        public required DataType DataType { get; init; }
     }
 
     private sealed class CsvDataSource : DataSource
